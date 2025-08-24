@@ -1,0 +1,14 @@
+release/barrier.o
+release/barriergeneration.o
+release/collidable.o
+release/collisiondetector.o
+release/healthbar.o
+release/main.o
+release/mainwindow.o
+release/player.o
+release/qrc_res.o
+release/moc_barrier.o
+release/moc_barriergeneration.o
+release/moc_healthbar.o
+release/moc_mainwindow.o
+release/moc_player.o
