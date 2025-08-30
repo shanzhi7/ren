@@ -59,8 +59,16 @@ void MainWindow::paintEvent(QPaintEvent *event)
         //绘制人物
         drawPlayerRunning(&painter);
 
+        //绘制boss
+        drawBoss(&painter);
+
         //绘制障碍物
         drawBarrier(&painter);
+
+        if(hurtImgAlpha != 0)
+        {
+            drawHurtImg(&painter);
+        }
 
     }
     else if(gameStatus == GAMESTATUS::isOver)
@@ -71,17 +79,35 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::initAttribute()
 {
+    hurtImgAlpha = 0;
     m_player = new player(this);
+    m_boss = new Boss(this);
+    generation = new BarrierGeneration(this,m_boss);
+    generation->setBoss(m_boss);
+
     lineDown = QLine(0, 650, width(), 650);
     startUi = QPixmap(":/ren3/resources/start_ui.png");
 
     beginImg = QPixmap(":/ren3/resources/startbut_1.png");
     rulesImg = QPixmap(":/ren3/resources/butt_1.png");
     hurt = QPixmap(":/ren3/resources/hurt.png");
+    deadPixmap = QPixmap(":/ren3/resources/death.png");
+
+    //初始化hurtLabel
+    // hurtLabel.setPixmap(hurt);
+    // hurtLabel.setScaledContents(true);
+    // hurtLabel.setFixedSize(this->width(),this->height());
+    // hurtLabel.setStyleSheet("background-color: transparent;border: none;");
+    // hurtLabel.hide();
+
+    //设置不透明度属性
+    // hurtOpacity = new QGraphicsOpacityEffect(&hurtLabel);
+    // hurtLabel.setGraphicsEffect(hurtOpacity);
+    // hurtOpacity->setOpacity(1.0);              //设置为完全不透明
 
     hpBar = new HealthBar(this);
     hpBar->setValue(1000);
-    hpBar->setGeometry(540,680,200,30);
+    hpBar->setGeometry(50,680,700,30);
 
     beginBnt = new QPushButton(this);
     rulesBnt = new QPushButton(this);
@@ -124,6 +150,8 @@ void MainWindow::initAttribute()
         }
     });
 
+    //连接人物生命发生减少时的信号槽
+    connect(m_player,&player::hpDown,this,&MainWindow::playerHpChangeDownSlot);
 
     hurtMeida = new QMediaPlayer(this);
     hurtAudio = new QAudioOutput(this);
@@ -132,8 +160,6 @@ void MainWindow::initAttribute()
     hurtMeida->setSource(hurtUrl);
     //设置音量
     hurtAudio->setVolume(1.0);
-
-    generation = new BarrierGeneration(this);
 }
 
 void MainWindow::drawPlayerRunning(QPainter *painter)
@@ -161,6 +187,38 @@ void MainWindow::drawBarrier(QPainter *painter)
             i++;
         }
     }
+}
+
+void MainWindow::drawBoss(QPainter *painter)
+{
+    if(m_boss == nullptr)
+    {
+        qDebug()<<"m_boss为空指针";
+        return;
+    }
+    painter->drawPixmap(m_boss->getRect(),m_boss->boss[m_boss->curBossIdx]);
+    painter->drawRect(m_boss->getDeadRect());
+}
+
+void MainWindow::drawHurtImg(QPainter* m_painter)
+{
+    //创建临时透明图片
+    QPixmap tempImg(hurt.size());
+    tempImg.fill(Qt::transparent);
+
+    QPainter painter(&tempImg);
+
+    //设置源模式,用源像素hurtImg覆盖透明目标
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawPixmap(0,0,hurt);
+
+    //设置目标模式,用hurt的Alpha调整temp的alpha(透明度)
+    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    painter.fillRect(tempImg.rect(),QColor(0,0,0,hurtImgAlpha));
+
+    m_painter->drawPixmap(0,0,this->width(),this->height(),tempImg);
+
+    hurtImgAlpha -= 5;
 }
 
 void MainWindow::initConnectTimer()
@@ -272,6 +330,7 @@ void MainWindow::handleTimerSolt()
 void MainWindow::checkCollision()
 {
     auto& list = generation->getList();
+    //qDebug()<<"list.size = "<<list.size();
     const int MAX_CHECK_SIZE = 10;          // 每帧最大检测此数,解决每帧检测次数过多导致程序界面卡死bug (障碍物碰撞导致无限触发碰撞检测处理
                                             // 无法执行i++，程序死循环)
     int cnt = 0;                            //当前检测此数
@@ -326,7 +385,7 @@ void MainWindow::handlerCollision(barrier* barr)
 
     int newBarValue = m_player->getHp();
     //动画平滑更新血条
-    QPropertyAnimation *animation = new QPropertyAnimation(hpBar,"value");
+    QPropertyAnimation *animation = new QPropertyAnimation(hpBar,"value",this);
     animation->setDuration(500);
     animation->setStartValue(hpBar->value());
     animation->setEndValue(newBarValue);
@@ -334,3 +393,13 @@ void MainWindow::handlerCollision(barrier* barr)
     animation->start(QAbstractAnimation::DeleteWhenStopped);        //动画结束自动销毁
 }
 
+void MainWindow::playerHpChangeDownSlot()
+{
+    qDebug()<<m_player->getHp();
+    hurtImgAlpha = 255;
+    if(m_player->getHp() <= 0)
+    {
+        this->close();
+    }
+
+}

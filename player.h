@@ -17,6 +17,7 @@
 #include <QWidget>
 class player : public QWidget,public Collidable
 {
+    Q_PROPERTY(int hp READ getHp WRITE setHp NOTIFY hpChanged)
     Q_OBJECT
 public:
     explicit player(QWidget  *parent = nullptr);
@@ -73,6 +74,9 @@ private:
     void playerRunning();
     void initPlayer();
 signals:
+    void hpChanged(int newHp);
+    void hpUp(int newHp);
+    void hpDown(int newHp);
 };
 
 #endif // PLAYER_H

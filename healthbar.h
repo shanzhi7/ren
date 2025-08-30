@@ -1,6 +1,14 @@
 #ifndef HEALTHBAR_H
 #define HEALTHBAR_H
-
+/***********************************************************************************
+*
+* @file         healthbar.h
+* @brief        血量条类
+*
+* @author       shanzhi
+* @date         2025/08/31
+* @history
+***********************************************************************************/
 #include <QWidget>
 #include <QPainter>
 #include <QLinearGradient>

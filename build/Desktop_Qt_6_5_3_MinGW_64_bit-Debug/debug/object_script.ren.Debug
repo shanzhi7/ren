@@ -1,5 +1,6 @@
 debug/barrier.o
 debug/barriergeneration.o
+debug/boss.o
 debug/collidable.o
 debug/collisiondetector.o
 debug/healthbar.o
@@ -9,6 +10,7 @@ debug/player.o
 debug/qrc_res.o
 debug/moc_barrier.o
 debug/moc_barriergeneration.o
+debug/moc_boss.o
 debug/moc_healthbar.o
 debug/moc_mainwindow.o
 debug/moc_player.o

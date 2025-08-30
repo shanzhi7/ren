@@ -13,6 +13,7 @@
 #include "player.h"
 #include "barriergeneration.h"
 #include "healthbar.h"
+#include "boss.h"
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTimer>
@@ -25,6 +26,7 @@
 #include <QAudioOutput>
 #include <QUrl>
 #include <QHash>
+#include <QGraphicsOpacityEffect>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -48,15 +50,19 @@ public:
         isOver
     };
     player *m_player;     //玩家对象
+    Boss *m_boss;         //boss对象
 
 private:
     Ui::MainWindow *ui;
     QTimer timer;
-    QTimer playerTimer;     //人物动画定时器
-    QTimer bgTimer;         //背景滚动定时器
-    QPixmap bgImage;        //背景图片
-    QPixmap startUi;        //首页背景
-    QPixmap hurt;           //受伤图片
+    QTimer playerTimer;                     //人物动画定时器
+    QTimer bgTimer;                         //背景滚动定时器
+    QPixmap bgImage;                        //背景图片
+    QPixmap startUi;                        //首页背景
+    QPixmap hurt;                           //受伤图片
+    QPixmap deadPixmap;                     //死亡图片
+    QLabel hurtLabel;                       //受伤图片标签
+    QGraphicsOpacityEffect* hurtOpacity;    //hurtLabel透明度
     QLine lineDown;         //路面线段
     HealthBar *hpBar;       //人物血量条
     QHash<barrier*,qint64> playerHash; //存储5秒内与人物碰撞过的障碍物
@@ -70,6 +76,8 @@ private:
     int bgHeight;        // 背景图片高度
     int bgX1;            // 第一张背景X坐标
     int bgX2;            // 第二张背景X坐标
+
+    int hurtImgAlpha;    //图片透明度
 
     QMediaPlayer *backgroundMusic;  //背景音乐
     QAudioOutput *audioOutPut;      //音频输出对象
@@ -85,12 +93,18 @@ private:
     void initAttribute();                                       //初始化属性
     void drawPlayerRunning(QPainter* painter);                  //绘制玩家
     void drawBarrier(QPainter* painter);                        //绘制障碍物
+    void drawBoss(QPainter* painter);                           //绘制boss
+    void drawHurtImg(QPainter* m_painter);                                         //绘制受伤图片
     void initConnectTimer();                                    //初始化定时器连接
     void keyPressEvent(QKeyEvent* event) override;              //键盘按下事件
     void keyReleaseEvent(QKeyEvent* event) override;            //键盘松开事件
     void gameBegin();                                           //开始游戏
     void handleTimerSolt();                                     //总定时器槽函数
     void checkCollision();                                      //碰撞检测
-    void handlerCollision(barrier* barr);                                    //处理碰撞
+    void handlerCollision(barrier* barr);                       //处理碰撞
+
+private slots:
+    void playerHpChangeDownSlot();                                  //槽函数玩家血量减少的
+
 };
 #endif // MAINWINDOW_H

@@ -20,10 +20,12 @@ public:
 
     barrier(int x,int y,int width,int height);
 
+    QPixmap pixmap;
+
     int getX();
     int getY();
     int getWidth();
-    int getheight();
+    int getHeight();
     int getSpeed();
     int getAttack();
 
@@ -36,15 +38,14 @@ public:
 
     int speed;
     QRect getRect() override;                                    //获取矩形
+    QPixmap getPixmap();
     void setRect(int x,int y,int width,int height);
     bool isActive();                                    //是否存活
     virtual QRect getDeadRect() = 0;                    //获取碰撞矩形
-    virtual QPixmap getPixmap() = 0;
     virtual void move() = 0;
 
 private:
     int x,y,width,height;
-
     int attack;
 
 signals:
@@ -54,17 +55,26 @@ signals:
 class Sword : public barrier
 {
 private:
-    QPixmap pixmap;                                     //图片
 
 public:
     Sword(int x,int y,int width = 100,int height = 50);
 
 
-    QPixmap getPixmap() override;                       //获取图片
     QRect getDeadRect() override;                       //获取碰撞矩形
     void move() override;                               //移动
+};
+
+//派生boss普通攻击
+class NormalAttack : public barrier
+{
 private:
-    //int x,y,width,height;
+
+public:
+    NormalAttack(int x,int y,int width = 100,int height = 70);
+
+    QRect getDeadRect() override;                       //获取碰撞体型
+    void move() override;                               //移动
+
 };
 
 #endif // BARRIER_H

@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     barrier.cpp \
     barriergeneration.cpp \
+    boss.cpp \
     collidable.cpp \
     collisiondetector.cpp \
     healthbar.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 HEADERS += \
     barrier.h \
     barriergeneration.h \
+    boss.h \
     collidable.h \
     collisiondetector.h \
     healthbar.h \

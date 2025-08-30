@@ -161,7 +161,22 @@ void player::setRect(int x, int y, int width, int height)
 
 void player::setHp(int hp)
 {
-    this->hp = hp;
+    if(this->hp == hp)
+    {
+        return;
+    }
+    else if(this->hp < hp)
+    {
+        this->hp = hp;
+        emit hpChanged(hp);
+        emit hpUp(hp);
+    }
+    else if(this->hp > hp)
+    {
+        this->hp = hp;
+        emit hpChanged(hp);
+        emit hpDown(hp);
+    }
 }
 
 void player::playerRunning()

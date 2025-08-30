@@ -30,7 +30,7 @@ int barrier::getWidth()
     return width;
 }
 
-int barrier::getheight()
+int barrier::getHeight()
 {
     return height;
 }
@@ -48,6 +48,11 @@ int barrier::getAttack()
 QRect barrier::getRect()
 {
     return QRect(this->x,this->y,this->width,this->height);
+}
+
+QPixmap barrier::getPixmap()
+{
+    return this->pixmap;
 }
 
 void barrier::setRect(int x, int y, int width, int height)
@@ -111,21 +116,41 @@ Sword::Sword(int x, int y, int width, int height)
     //qDebug()<<this->getWidth()<<" "<<this->getheight();
     this->setSpeed(3);
     this->setAttack(50);
-    setRect(this->getX(),this->getY(),this->getWidth(),this->getheight());
+    setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
 }
 
-QPixmap Sword::getPixmap()
-{
-    return this->pixmap;
-}
+
 
 QRect Sword::getDeadRect()
 {
-    return QRect(this->getX(),this->getY() + 25,this->getWidth(),this->getheight() - 32);
+    return QRect(this->getX(),this->getY() + 25,this->getWidth(),this->getHeight() - 32);
 }
 
 void Sword::move()
 {
     this->setX(this->getX() - this->getSpeed());
     //qDebug()<<this->getX();
+}
+
+NormalAttack::NormalAttack(int x, int y, int width, int height)
+{
+    this->pixmap = QPixmap(":/ren3/resources/pugong.png");
+    setX(x);
+    setY(y);
+    setWidth(width);
+    setHeight(height);
+    this->setAttack(30);
+    //qDebug()<<this->getWidth()<<" "<<this->getheight();
+    this->setSpeed(3);
+    setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+QRect NormalAttack::getDeadRect()
+{
+    return QRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+void NormalAttack::move()
+{
+    this->setX(this->getX() - this->getSpeed());
 }
