@@ -16,6 +16,7 @@ public:
     Collidable();
     // 纯虚函数：返回自身的QRect（包含位置和尺寸）
     virtual QRect getRect() = 0;
+    virtual QRect getDeadRect() = 0;
     virtual ~Collidable() = default;
 };
 

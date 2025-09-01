@@ -43,12 +43,15 @@ public:
     bool isDown;                    //正在下落
     bool twice_ready;               //可以二次跳
 
+    int maxButtetNum;               //子弹存储数量
+
 
 //私有成员变量
 private:
     int x,y,width,height;
     int hp;                             //人物血量
     int maxHp;                          //人物最大血量
+    int attack;                         //角色攻击力
 
     QPixmap curRunPixmap;               //人物当前动画帧图片
     int curPixmapIdx;                   //人物当前动画帧图片索引
@@ -56,15 +59,15 @@ private:
 
 //公共函数
 public:
-    QPixmap getCurRunningPixmap();  //获取当前跑步图片帧
-    void move();                    //移动
+    QPixmap getCurRunningPixmap();      //获取当前跑步图片帧
+    void move();                        //移动
     int getx();
     int gety();
     int getWidth();
     int getHeight();
     int getHp();
     QRect getRect() override;                   //获取人物矩形
-    QRect getDeadRect();                        //获取人物可碰撞矩形
+    QRect getDeadRect() override;                        //获取人物可碰撞矩形
 
     void setRect(int x,int y,int width,int height);
     void setHp(int hp);
@@ -77,6 +80,7 @@ signals:
     void hpChanged(int newHp);
     void hpUp(int newHp);
     void hpDown(int newHp);
+    void fired();                               //发射子弹
 };
 
 #endif // PLAYER_H

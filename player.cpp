@@ -202,6 +202,8 @@ void player::initPlayer()
     height = 50;
     maxHp = 1000;
     hp = 1000;
+    attack = 100;
+    maxButtetNum = 10;
 
 
     jump_once = false;          //已经跳跃一次

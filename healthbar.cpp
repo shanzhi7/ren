@@ -43,7 +43,7 @@ void HealthBar::paintEvent(QPaintEvent *event)
     painter.drawRoundedRect(rect(),3,3);
 
     //绘制血条
-    int barWidth = static_cast<int>(width() * curValue / 1000.0);
+    int barWidth = static_cast<int>(width() * curValue / maxValue);
     QLinearGradient gradient(0,0,barWidth,0);
     gradient.setColorAt(1, QColor(0, 255, 0));              //绿色
     gradient.setColorAt(0.5, QColor(255, 255, 0));          //黄色

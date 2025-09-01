@@ -15,8 +15,40 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setFixedSize(1280,720);
-    initAttribute();    //初始化属性
-    initConnectTimer();  //初始化定时器连接
+
+
+    lineDown = QLine(0, 650, width(), 650);
+    startUi = QPixmap(":/ren3/resources/start_ui.png");
+
+    beginImg = QPixmap(":/ren3/resources/startbut_1.png");
+    rulesImg = QPixmap(":/ren3/resources/butt_1.png");
+    hurt = QPixmap(":/ren3/resources/hurt.png");
+    deadPixmap = QPixmap(":/ren3/resources/death.png");
+
+
+    beginBnt = new QPushButton(this);
+    rulesBnt = new QPushButton(this);
+
+    beginBnt->setFixedSize(QSize(beginImg.width() - 5,beginImg.height() - 5));
+    rulesBnt->setFixedSize(QSize(rulesImg.width() - 5,rulesImg.height() - 5));
+
+    //设置图标大小等于图片尺寸
+    beginBnt->setIconSize(beginImg.size());
+    rulesBnt->setIconSize(rulesImg.size());
+
+    //移除内边距和边框
+    beginBnt->setStyleSheet("border: none; padding: 0px;");
+    rulesBnt->setStyleSheet("border: none; padding: 0px;");
+
+    beginBnt->setIcon(beginImg);
+    rulesBnt->setIcon(rulesImg);
+
+    beginBnt->move(500,400);
+    rulesBnt->move(700,400);
+
+    connect(beginBnt,&QPushButton::clicked,this,[=](){
+        this->gameBegin();
+    });
 
     // 加载背景图片并获取尺寸
     bgImage = QPixmap(":/ren3/back.jpg");
@@ -25,6 +57,17 @@ MainWindow::MainWindow(QWidget *parent)
     //bgImage = bgImage.scaled(bgWidth*2, bgHeight, Qt::KeepAspectRatioByExpanding);
     bgX2 = bgWidth - 5; // 初始时第二张背景在第一张右侧
 
+    hpBar = new HealthBar(this);
+    hpBar->setValue(1000);
+    hpBar->setMaxValue(1000);
+    hpBar->setGeometry(50,680,700,30);
+
+    bossHpBar = new HealthBar(this);
+    bossHpBar->setValue(10000);
+    bossHpBar->setMaxValue(10000);
+    bossHpBar->setGeometry(100,10,1000,30);
+    hpBar->hide();
+    bossHpBar->hide();
 }
 
 MainWindow::~MainWindow()
@@ -65,6 +108,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
         //绘制障碍物
         drawBarrier(&painter);
 
+        //绘制子弹
+        drawBullet(&painter);
+
         if(hurtImgAlpha != 0)
         {
             drawHurtImg(&painter);
@@ -73,68 +119,53 @@ void MainWindow::paintEvent(QPaintEvent *event)
     }
     else if(gameStatus == GAMESTATUS::isOver)
     {
-
+        if(!isWin)
+        {
+            painter.drawPixmap(this->rect(),deadPixmap);
+            qDebug()<<"isOver";
+            emit gameFail();
+        }
     }
+    QMainWindow::paintEvent(event);
+}
+
+void MainWindow::firePlay()
+{
+    if(fireMeida->isPlaying())
+        fireMeida->stop();
+    this->fireMeida->play();
+}
+
+void MainWindow::fireStop()
+{
+    fireMeida->stop();
+}
+
+void MainWindow::hurtPlay()
+{
+    if(hurtMeida->isPlaying())
+        hurtMeida->stop();
+    hurtMeida->play();
 }
 
 void MainWindow::initAttribute()
 {
     hurtImgAlpha = 0;
-    m_player = new player(this);
-    m_boss = new Boss(this);
-    generation = new BarrierGeneration(this,m_boss);
+    isWin = false;
+    if(!m_player)
+        m_player = new player(this);
+    if(!m_boss)
+        m_boss = new Boss(this);
+
+    if(!generation)
+        generation = new BarrierGeneration(this,m_boss,m_player);
     generation->setBoss(m_boss);
+    generation->setParent(this);
 
-    lineDown = QLine(0, 650, width(), 650);
-    startUi = QPixmap(":/ren3/resources/start_ui.png");
-
-    beginImg = QPixmap(":/ren3/resources/startbut_1.png");
-    rulesImg = QPixmap(":/ren3/resources/butt_1.png");
-    hurt = QPixmap(":/ren3/resources/hurt.png");
-    deadPixmap = QPixmap(":/ren3/resources/death.png");
-
-    //初始化hurtLabel
-    // hurtLabel.setPixmap(hurt);
-    // hurtLabel.setScaledContents(true);
-    // hurtLabel.setFixedSize(this->width(),this->height());
-    // hurtLabel.setStyleSheet("background-color: transparent;border: none;");
-    // hurtLabel.hide();
-
-    //设置不透明度属性
-    // hurtOpacity = new QGraphicsOpacityEffect(&hurtLabel);
-    // hurtLabel.setGraphicsEffect(hurtOpacity);
-    // hurtOpacity->setOpacity(1.0);              //设置为完全不透明
-
-    hpBar = new HealthBar(this);
-    hpBar->setValue(1000);
-    hpBar->setGeometry(50,680,700,30);
-
-    beginBnt = new QPushButton(this);
-    rulesBnt = new QPushButton(this);
-
-    beginBnt->setFixedSize(QSize(beginImg.width() - 5,beginImg.height() - 5));
-    rulesBnt->setFixedSize(QSize(rulesImg.width() - 5,rulesImg.height() - 5));
-
-    //设置图标大小等于图片尺寸
-    beginBnt->setIconSize(beginImg.size());
-    rulesBnt->setIconSize(rulesImg.size());
-
-    //移除内边距和边框
-    beginBnt->setStyleSheet("border: none; padding: 0px;");
-    rulesBnt->setStyleSheet("border: none; padding: 0px;");
-
-    beginBnt->setIcon(beginImg);
-    rulesBnt->setIcon(rulesImg);
-
-    beginBnt->move(500,400);
-    rulesBnt->move(700,400);
-
-    connect(beginBnt,&QPushButton::clicked,this,[=](){
-        this->gameBegin();
-    });
-
-    backgroundMusic = new QMediaPlayer(this);   //创建播放器实例
-    audioOutPut = new QAudioOutput(this);
+    if(!backgroundMusic)
+        backgroundMusic = new QMediaPlayer(this);   //创建播放器实例
+    if((!audioOutPut))
+        audioOutPut = new QAudioOutput(this);
 
     backgroundMusic->setAudioOutput(audioOutPut); //设置音频源
 
@@ -145,7 +176,7 @@ void MainWindow::initAttribute()
 
     //循环播放
     connect(backgroundMusic, &QMediaPlayer::playbackStateChanged, this, [=](QMediaPlayer::PlaybackState state) {
-        if (state == QMediaPlayer::StoppedState) {
+        if (state == QMediaPlayer::StoppedState && gameStatus == GAMESTATUS::isRunning) {
             backgroundMusic->play();
         }
     });
@@ -153,19 +184,38 @@ void MainWindow::initAttribute()
     //连接人物生命发生减少时的信号槽
     connect(m_player,&player::hpDown,this,&MainWindow::playerHpChangeDownSlot);
 
-    hurtMeida = new QMediaPlayer(this);
-    hurtAudio = new QAudioOutput(this);
+    //连接boss血量减少的槽函数
+    connect(m_boss,&Boss::hpDown,this,&MainWindow::bossHpChangDownSolt);
+
+    //游戏失败
+    connect(this,&MainWindow::gameFail,this,&MainWindow::gameFailSolt);
+
+    if(!hurtMeida)
+        hurtMeida = new QMediaPlayer(this);
+    if(!hurtAudio)
+        hurtAudio = new QAudioOutput(this);
     hurtMeida->setAudioOutput(hurtAudio);
     QUrl hurtUrl("qrc:/ren3/sound/shoushang.wav");
     hurtMeida->setSource(hurtUrl);
     //设置音量
     hurtAudio->setVolume(1.0);
+
+    if(!fireMeida)
+        fireMeida = new QMediaPlayer(this);
+    if(!fireAudio)
+        fireAudio = new QAudioOutput(this);
+    fireMeida->setAudioOutput(fireAudio);
+    QUrl firetUrl("qrc:/ren3/sound/fire.wav");
+    fireMeida->setSource(firetUrl);
+    //设置音量
+    fireAudio->setVolume(1.0);
+    initConnectTimer();  //初始化定时器连接
 }
 
 void MainWindow::drawPlayerRunning(QPainter *painter)
 {
     painter->drawPixmap(m_player->getRect(),m_player->getCurRunningPixmap());
-    painter->drawRect(m_player->getDeadRect());
+    //painter->drawRect(m_player->getDeadRect());
 }
 
 void MainWindow::drawBarrier(QPainter *painter)
@@ -181,7 +231,7 @@ void MainWindow::drawBarrier(QPainter *painter)
         else
         {
             painter->drawPixmap(it->getRect(),it->getPixmap());
-            painter->drawRect(it->getDeadRect());
+            //painter->drawRect(it->getDeadRect());
             //qDebug()<<it->getRect().x()<<" "<<it->getRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
             //qDebug()<<it->getDeadRect().x()<<" "<<it->getDeadRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
             i++;
@@ -196,8 +246,37 @@ void MainWindow::drawBoss(QPainter *painter)
         qDebug()<<"m_boss为空指针";
         return;
     }
-    painter->drawPixmap(m_boss->getRect(),m_boss->boss[m_boss->curBossIdx]);
-    painter->drawRect(m_boss->getDeadRect());
+    if(!m_boss->isReleaseSkill) //未释放技能
+    {
+        painter->drawPixmap(m_boss->getRect(),m_boss->boss[m_boss->curBossIdx]);
+        //painter->drawRect(m_boss->getDeadRect());
+    }
+    else                        //释放技能
+    {
+        painter->drawPixmap(m_boss->getRect(),m_boss->Skill1[m_boss->curSkill1Idx]);
+        //painter->drawRect(m_boss->getDeadRect());
+    }
+}
+
+void MainWindow::drawBullet(QPainter *painter)
+{
+    auto& list  = generation->getBulletList();
+    for(int i = 0;i < list.size();)
+    {
+        auto it = list[i];
+        if(!it)
+        {
+            list.removeAt(i);
+        }
+        else
+        {
+            painter->drawPixmap(it->getRect(),it->getPixmap());
+            //dpainter->drawRect(it->getDeadRect());
+            //qDebug()<<it->getRect().x()<<" "<<it->getRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
+            //qDebug()<<it->getDeadRect().x()<<" "<<it->getDeadRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
+            i++;
+        }
+    }
 }
 
 void MainWindow::drawHurtImg(QPainter* m_painter)
@@ -254,6 +333,16 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         QMainWindow::keyPressEvent(event);
         return;
     }
+    else if(gameStatus == GAMESTATUS::isOver)
+    {
+        if(event->key() == Qt::Key_Escape)
+        {
+            gameStatus = GAMESTATUS::noRunning;
+            beginBnt->show();
+            rulesBnt->show();
+            update();
+        }
+    }
     else if(event->key() == Qt::Key_W)
     {
         m_player->up = true;
@@ -307,13 +396,30 @@ void MainWindow::gameBegin()
     beginBnt->hide();
     rulesBnt->hide();
 
+    hpBar->show();
+    bossHpBar->show();
+
+    initAttribute();    //初始化属性
+
+    hpBar->setValue(1000);
+    hpBar->setMaxValue(1000);
+
+    bossHpBar->setValue(10000);
+    bossHpBar->setMaxValue(10000);
+
+    m_player->setHp(1000);
+    m_boss->setHp(10000);
+
     playerTimer.start(17);          //总定时器
     bgTimer.start(30);              //背景图定时器
     m_player->runTimer->start(50); //人物跑动定时器
     // 开始播放
+    if(backgroundMusic->isPlaying())
+        backgroundMusic->stop();
     backgroundMusic->play();
 
     generation->barrierGenerate();
+    timerStart();
     update();
 }
 
@@ -323,15 +429,13 @@ void MainWindow::handleTimerSolt()
     generation->updateBarrierPos();         //更新障碍物位置
     m_player->move();                       //更新人物位置
     checkCollision();                       //碰撞检测
-    //qDebug()<<"碰撞:"<<QDateTime::currentDateTime();
-
+    checkBulletCollision();
 }
 
 void MainWindow::checkCollision()
 {
     auto& list = generation->getList();
-    //qDebug()<<"list.size = "<<list.size();
-    const int MAX_CHECK_SIZE = 10;          // 每帧最大检测此数,解决每帧检测次数过多导致程序界面卡死bug (障碍物碰撞导致无限触发碰撞检测处理
+    const int MAX_CHECK_SIZE = 100;          // 每帧最大检测此数,解决每帧检测次数过多导致程序界面卡死bug (障碍物碰撞导致无限触发碰撞检测处理
                                             // 无法执行i++，程序死循环)
     int cnt = 0;                            //当前检测此数
     for(int i = 0;i < list.size();)
@@ -353,6 +457,12 @@ void MainWindow::checkCollision()
             if(CollisionDetector::checkCollision(*m_player,*it))        //两物体碰撞
             {
                 qint64 curTime = QDateTime::currentMSecsSinceEpoch();
+                if(it->getType() == Type::COIN)
+                {
+                    list.removeAt(i);
+                    emit m_player->fired();                           //发送信号
+                    continue;
+                }
                 if(playerHash.contains(it))                             //检测之前是否碰撞过
                 {
                     qint64 lastTime = playerHash[it];
@@ -377,10 +487,97 @@ void MainWindow::checkCollision()
     }
 }
 
+void MainWindow::checkBulletCollision()
+{
+    auto& bulletList = generation->getBulletList();
+
+    auto& barrierList = generation->getList();
+    const int MAX_CHECK_SIZE = 100;          // 每帧最大检测此数,解决每帧检测次数过多导致程序界面卡死bug (障碍物碰撞导致无限触发碰撞检测处理
+    // 无法执行i++，程序死循环)
+    int cnt = 0;                            //当前检测此数
+    for(int i = 0;i < bulletList.size();)
+    {
+
+        if(cnt > MAX_CHECK_SIZE)
+            return;
+        cnt++;
+        auto bulletIt = bulletList[i];
+        bool bulletRemoved = false;
+        if(!bulletIt)
+        {
+            bulletList.removeAt(i);
+            continue;
+        }
+        else
+        {
+            if(cnt > MAX_CHECK_SIZE)
+                return;
+            cnt++;
+            //检测子弹与障碍物碰撞
+            for(int j = 0;j < barrierList.size();)
+            {
+                auto barrierIt = barrierList[j];
+                cnt++;
+                if(!barrierIt)
+                {
+                    barrierList.removeAt(j);
+                    continue;
+                }
+                else
+                {
+                    if(CollisionDetector::checkCollision(*bulletIt,*barrierIt) && barrierIt->getType() != Type::COIN && bulletIt && barrierIt)
+                    {
+                        bulletList.removeAt(i);
+                        barrierList.removeAt(j);
+                        bulletRemoved = true;
+                        break;
+                    }
+                    else
+                    {
+                        j++;
+                    }
+                }
+            }
+            // 如果子弹已被障碍物移除，跳过BOSS检测
+            if (bulletRemoved)
+            {
+                continue; // 保持i不变（下次循环会处理新位置i的子弹）
+            }
+
+            // BOSS碰撞检测
+            if (cnt >= MAX_CHECK_SIZE)
+                return;
+            cnt++; // BOSS碰撞检测计数
+
+            if(CollisionDetector::checkCollision(*bulletIt,*m_boss) && bulletIt)
+            {
+                qDebug()<<"pengzhuang";
+                bulletList.removeAt(i);
+                handlerBossCollision(bulletIt);
+            }
+            i++;
+        }
+    }
+}
+
+void MainWindow::handlerBossCollision(Bullet *bullet)
+{
+    qDebug()<<"boss";
+    m_boss->setHp(m_boss->getHp() - bullet->getAttack());
+
+    int newBarValue = m_boss->getHp();
+    //动画平滑更新血条
+    QPropertyAnimation *animation = new QPropertyAnimation(bossHpBar,"value",this);
+    animation->setDuration(500);
+    animation->setStartValue(bossHpBar->value());
+    animation->setEndValue(newBarValue);
+    animation->setEasingCurve(QEasingCurve::OutCurve);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);        //动画结束自动销毁
+}
+
 void MainWindow::handlerCollision(barrier* barr)
 {
     m_player->setHp(m_player->getHp() - barr->getAttack());
-    hurtMeida->play();
     //hpBar->setValue(m_player->getHp());
 
     int newBarValue = m_player->getHp();
@@ -393,13 +590,58 @@ void MainWindow::handlerCollision(barrier* barr)
     animation->start(QAbstractAnimation::DeleteWhenStopped);        //动画结束自动销毁
 }
 
+void MainWindow::timerStop()
+{
+    timer.stop();
+    playerTimer.stop();                     //人物动画定时器
+    bgTimer.stop();                         //背景滚动定时器
+    m_player->runTimer->stop();
+    m_boss->timerStop();
+    generation->timerStop();
+}
+
+void MainWindow::timerStart()
+{
+    m_boss->timerStart();
+    generation->timerStart();
+}
+
 void MainWindow::playerHpChangeDownSlot()
 {
     qDebug()<<m_player->getHp();
+    hurtPlay();
     hurtImgAlpha = 255;
     if(m_player->getHp() <= 0)
     {
-        this->close();
+        isWin = false;
+        gameStatus = GAMESTATUS::isOver;
     }
 
+}
+
+void MainWindow::bossHpChangDownSolt()
+{
+    if(m_boss->getHp() <= 0)
+    {
+        this->close();
+    }
+}
+
+void MainWindow::gameFailSolt()
+{
+    timerStop();
+    backgroundMusic->stop();
+    hpBar->hide();
+    disconnect(&playerTimer,nullptr,this,nullptr);
+    disconnect(&bgTimer,nullptr,this,nullptr);
+
+    m_boss->isReleaseSkill = false;
+    m_boss->isNormal = true;
+    m_boss->isSkill1 = false;
+    generation->bullteFireHide();
+
+    m_player->setRect(200,600,50,50);
+
+    bossHpBar->hide();
+    generation->deleteList();
 }

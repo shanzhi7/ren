@@ -25,6 +25,7 @@ HEADERS += \
     boss.h \
     collidable.h \
     collisiondetector.h \
+    global.h \
     healthbar.h \
     mainwindow.h \
     player.h

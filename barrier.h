@@ -10,6 +10,7 @@
 * @history
 ***********************************************************************************/
 #include "collidable.h"
+#include "global.h"
 #include <QWidget>
 
 class barrier : public QWidget,public Collidable
@@ -21,6 +22,7 @@ public:
     barrier(int x,int y,int width,int height);
 
     QPixmap pixmap;
+    bool isBarrier;                 //是否是有伤害属性的障碍物
 
     int getX();
     int getY();
@@ -28,6 +30,7 @@ public:
     int getHeight();
     int getSpeed();
     int getAttack();
+    int getType();
 
     void setX(int x);
     void setY(int y);
@@ -36,6 +39,7 @@ public:
     void setAttack(int act);
     void setSpeed(int spd);
 
+    int type;
     int speed;
     QRect getRect() override;                                    //获取矩形
     QPixmap getPixmap();
@@ -72,9 +76,46 @@ private:
 public:
     NormalAttack(int x,int y,int width = 100,int height = 70);
 
+
     QRect getDeadRect() override;                       //获取碰撞体型
     void move() override;                               //移动
 
 };
+
+class Coin : public barrier
+{
+private:
+
+public:
+    Coin(int x,int y,int width = 50,int height = 50);
+
+
+    QRect getDeadRect() override;                       //获取碰撞矩形
+    void move() override;                               //移动
+};
+
+class Bullet : public barrier
+{
+private:
+
+public:
+    Bullet(int x,int y,int width = 50,int height = 40);
+
+
+    QRect getDeadRect() override;                       //获取碰撞矩形
+    void move() override;                               //移动
+};
+
+class Darts : public barrier
+{
+private:
+
+public:
+    Darts(int x,int y,int width = 70,int height = 70);
+
+    QRect getDeadRect() override;                      //获取碰撞矩形
+    void move() override;                              //移动
+};
+
 
 #endif // BARRIER_H

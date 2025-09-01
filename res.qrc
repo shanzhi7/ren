@@ -66,5 +66,9 @@
         <file>ren3/sound/longyuexing.mp3</file>
         <file>ren3/back.jpg</file>
         <file>ren3/sound/shoushang.wav</file>
+        <file>ren3/zidantexiao/bullet1.png</file>
+        <file>ren3/zidantexiao/bullet2.png</file>
+        <file>ren3/zidantexiao/bulletHead.png</file>
+        <file>ren3/sound/fire.wav</file>
     </qresource>
 </RCC>

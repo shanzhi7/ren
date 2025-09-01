@@ -13,6 +13,8 @@ barrier::barrier(int x, int y, int width, int height)
     this->width = width;
     this->height = height;
     this->attack = 0;
+    isBarrier = true;
+    type = -1;
 }
 
 int barrier::getX()
@@ -43,6 +45,11 @@ int barrier::getSpeed()
 int barrier::getAttack()
 {
     return this->attack;
+}
+
+int barrier::getType()
+{
+    return type;
 }
 
 QRect barrier::getRect()
@@ -109,10 +116,12 @@ Sword::Sword(int x, int y, int width, int height)
     :barrier(x, y, width, height)
 {
     this->pixmap = QPixmap(":/ren3/resources/feijian.png");
+    isBarrier = true;
     setX(x);
     setY(y);
     setWidth(width);
     setHeight(height);
+    type = Type::SWORD;
     //qDebug()<<this->getWidth()<<" "<<this->getheight();
     this->setSpeed(3);
     this->setAttack(50);
@@ -139,9 +148,10 @@ NormalAttack::NormalAttack(int x, int y, int width, int height)
     setY(y);
     setWidth(width);
     setHeight(height);
+    type = Type::NORMALATTACT;
     this->setAttack(30);
     //qDebug()<<this->getWidth()<<" "<<this->getheight();
-    this->setSpeed(3);
+    this->setSpeed(4);
     setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
 }
 
@@ -151,6 +161,82 @@ QRect NormalAttack::getDeadRect()
 }
 
 void NormalAttack::move()
+{
+    this->setX(this->getX() - this->getSpeed());
+}
+
+Coin::Coin(int x, int y, int width, int height)
+{
+    this->pixmap = QPixmap(":/ren3/resources/coin.png");
+    isBarrier = false;
+    setX(x);
+    setY(y);
+    setWidth(width);
+    setHeight(height);
+    type = Type::COIN;
+    type = Type::COIN;
+    //qDebug()<<this->getWidth()<<" "<<this->getheight();
+    this->setSpeed(2);
+    this->setAttack(0);
+    setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+QRect Coin::getDeadRect()
+{
+    return QRect(this->getX() + 10,this->getY() + 10,this->getWidth() - 20,this->getHeight() - 15);
+}
+
+void Coin::move()
+{
+    this->setX(this->getX() - this->getSpeed());
+}
+
+Bullet::Bullet(int x, int y, int width, int height)
+{
+    this->pixmap = QPixmap(":/ren3/zidantexiao/bulletHead.png");
+    isBarrier = false;
+    setX(x);
+    setY(y);
+    setWidth(width);
+    setHeight(height);
+    type = Type::BULLET;
+    //qDebug()<<this->getWidth()<<" "<<this->getheight();
+    this->setSpeed(15);
+    this->setAttack(100);
+    setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+QRect Bullet::getDeadRect()
+{
+    return QRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+void Bullet::move()
+{
+    this->setX(this->getX() + this->getSpeed());
+}
+
+Darts::Darts(int x, int y, int width, int height)
+{
+    this->pixmap = QPixmap(":/ren3/resources/feibiao.png");
+    isBarrier = true;
+    setX(x);
+    setY(y);
+    setWidth(width);
+    setHeight(height);
+    type = Type::DARTS;
+    //qDebug()<<this->getWidth()<<" "<<this->getheight();
+    this->setSpeed(5);
+    this->setAttack(70);
+    setRect(this->getX(),this->getY(),this->getWidth(),this->getHeight());
+}
+
+QRect Darts::getDeadRect()
+{
+    return QRect(this->getX() + 10,this->getY() + 10,this->getWidth() - 20,this->getHeight() - 20);
+}
+
+void Darts::move()
 {
     this->setX(this->getX() - this->getSpeed());
 }
