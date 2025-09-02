@@ -5,7 +5,7 @@
 * @file         healthbar.h
 * @brief        血量条类
 *
-* @author       shanzhi
+* @author       shanzhi-ph
 * @date         2025/08/31
 * @history
 ***********************************************************************************/

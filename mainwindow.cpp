@@ -15,7 +15,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setFixedSize(1280,720);
+    this->setWindowTitle("山河疾行");
 
+    ruleWidgt = new RuleDialog();
+    ruleWidgt->setRuleText("游戏规则说明：\n\n"
+                           "1. 使用WASD方向键控制角色移动\n"
+                           "2. 打败Boss完成关卡\n"
+                           "3. 避开障碍物\n"
+                           "4. 拾取忍币发射子弹攻击\n"
+                           "5. 游戏结束按ESC返回主窗口");
 
     lineDown = QLine(0, 650, width(), 650);
     startUi = QPixmap(":/ren3/resources/start_ui.png");
@@ -24,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     rulesImg = QPixmap(":/ren3/resources/butt_1.png");
     hurt = QPixmap(":/ren3/resources/hurt.png");
     deadPixmap = QPixmap(":/ren3/resources/death.png");
+    winBackPixmap = QPixmap(":/ren3/resources/play_ground.jpg");
+    winPixmap = QPixmap(":/ren3/resources/win.png");
 
 
     beginBnt = new QPushButton(this);
@@ -50,6 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
         this->gameBegin();
     });
 
+    connect(rulesBnt,&QPushButton::clicked,this,[=](){
+        ruleWidgt->show();
+    });
+
     // 加载背景图片并获取尺寸
     bgImage = QPixmap(":/ren3/back.jpg");
     bgWidth = bgImage.width();
@@ -72,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete ruleWidgt;
     delete ui;
 }
 
@@ -122,8 +137,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
         if(!isWin)
         {
             painter.drawPixmap(this->rect(),deadPixmap);
-            qDebug()<<"isOver";
-            emit gameFail();
+        }
+        else
+        {
+            painter.drawPixmap(this->rect(),winBackPixmap);
+            painter.drawPixmap(this->width() / 2 - 300,this->height() / 2 - 100,600,200,winPixmap);
         }
     }
     QMainWindow::paintEvent(event);
@@ -190,6 +208,9 @@ void MainWindow::initAttribute()
     //游戏失败
     connect(this,&MainWindow::gameFail,this,&MainWindow::gameFailSolt);
 
+    //游戏胜利
+    connect(this,&MainWindow::gameWin,this,&MainWindow::gameWinSolt);
+
     if(!hurtMeida)
         hurtMeida = new QMediaPlayer(this);
     if(!hurtAudio)
@@ -231,7 +252,7 @@ void MainWindow::drawBarrier(QPainter *painter)
         else
         {
             painter->drawPixmap(it->getRect(),it->getPixmap());
-            //painter->drawRect(it->getDeadRect());
+            //wdpainter->drawRect(it->getDeadRect());
             //qDebug()<<it->getRect().x()<<" "<<it->getRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
             //qDebug()<<it->getDeadRect().x()<<" "<<it->getDeadRect().y()<<" "<<it->getWidth()<<" "<<it->getheight();
             i++;
@@ -253,7 +274,10 @@ void MainWindow::drawBoss(QPainter *painter)
     }
     else                        //释放技能
     {
-        painter->drawPixmap(m_boss->getRect(),m_boss->Skill1[m_boss->curSkill1Idx]);
+        if(m_boss->isSkill1)
+            painter->drawPixmap(m_boss->getRect(),m_boss->Skill1[m_boss->curSkill1Idx]);
+        else if(m_boss->isSkill2)
+            painter->drawPixmap(m_boss->getRect(),m_boss->Skill2[m_boss->curSkill2Idx]);
         //painter->drawRect(m_boss->getDeadRect());
     }
 }
@@ -392,6 +416,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::gameBegin()
 {
+    isWin = false;
     gameStatus = GAMESTATUS::isRunning;
     beginBnt->hide();
     rulesBnt->hide();
@@ -525,7 +550,9 @@ void MainWindow::checkBulletCollision()
                 }
                 else
                 {
-                    if(CollisionDetector::checkCollision(*bulletIt,*barrierIt) && barrierIt->getType() != Type::COIN && bulletIt && barrierIt)
+                    if(CollisionDetector::checkCollision(*bulletIt,*barrierIt)
+                        && barrierIt->getType()
+                               !=Type::COIN && barrierIt->getType() != Type::FLASH && bulletIt && barrierIt)
                     {
                         bulletList.removeAt(i);
                         barrierList.removeAt(j);
@@ -613,6 +640,7 @@ void MainWindow::playerHpChangeDownSlot()
     hurtImgAlpha = 255;
     if(m_player->getHp() <= 0)
     {
+        emit gameFail();
         isWin = false;
         gameStatus = GAMESTATUS::isOver;
     }
@@ -623,12 +651,35 @@ void MainWindow::bossHpChangDownSolt()
 {
     if(m_boss->getHp() <= 0)
     {
-        this->close();
+        emit gameWin();
+        isWin = true;
+        gameStatus = GAMESTATUS::isOver;
     }
 }
 
 void MainWindow::gameFailSolt()
 {
+    isWin = false;
+    timerStop();
+    backgroundMusic->stop();
+    hpBar->hide();
+    disconnect(&playerTimer,nullptr,this,nullptr);
+    disconnect(&bgTimer,nullptr,this,nullptr);
+
+    m_boss->isReleaseSkill = false;
+    m_boss->isNormal = true;
+    m_boss->isSkill1 = false;
+    generation->bullteFireHide();
+
+    m_player->setRect(200,600,50,50);
+
+    bossHpBar->hide();
+    generation->deleteList();
+}
+
+void MainWindow::gameWinSolt()
+{
+    isWin = true;
     timerStop();
     backgroundMusic->stop();
     hpBar->hide();

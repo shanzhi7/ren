@@ -5,7 +5,7 @@
 * @file         collisiondetector.h
 * @brief        碰撞检测者，主要用于物体碰撞检测
 *
-* @author       shanzhi
+* @author       shanzhi-ph
 * @date         2025/08/18
 * @history
 ***********************************************************************************/

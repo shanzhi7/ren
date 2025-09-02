@@ -16,6 +16,7 @@
 #include "global.h"
 #include "healthbar.h"
 #include "boss.h"
+#include "ruledialog.h"
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTimer>
@@ -61,6 +62,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    RuleDialog* ruleWidgt;                  //规则窗口
+
     QTimer timer;
     QTimer playerTimer;                     //人物动画定时器
     QTimer bgTimer;                         //背景滚动定时器
@@ -68,6 +71,8 @@ private:
     QPixmap startUi;                        //首页背景
     QPixmap hurt;                           //受伤图片
     QPixmap deadPixmap;                     //死亡图片
+    QPixmap winBackPixmap;                  //胜利背景
+    QPixmap winPixmap;                      //胜利图片
     QLabel hurtLabel;                       //受伤图片标签
     QGraphicsOpacityEffect* hurtOpacity = nullptr;    //hurtLabel透明度
     QLine lineDown;                         //路面线段
@@ -125,9 +130,11 @@ private slots:
     void playerHpChangeDownSlot();                              //槽函数玩家血量减少的
     void bossHpChangDownSolt();                                 //boss血量减少槽函数
     void gameFailSolt();                                        //游戏结束槽函数
+    void gameWinSolt();                                         //游戏获胜槽函数
 
 signals:
     void gameFail();
+    void gameWin();
 
 };
 #endif // MAINWINDOW_H

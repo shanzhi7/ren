@@ -15,18 +15,21 @@ Boss::Boss(QWidget *parent)
     active = true;
     curBossIdx = 0;
     curSkill1Idx = 0;
+    curSkill2Idx = 0;
 
     isReleaseSkill = false;
     isNormal = true;
     isSkill1 = false;
+    isSkill2 = false;
 
-    skillNum = 1;
+    skillNum = 2;
     type = Type::BOSS;
 
     rateSkillsTimer = new QTimer(this);
     NormalActiveTimer = new QTimer(this);
     deButTimer = new QTimer(this);
     Skill1Timer = new QTimer(this);
+    Skill2Timer = new QTimer(this);
 
     QString str2= ":/ren3/resources/pugong";
     for(int i = 1;i <= 2;i++)
@@ -36,6 +39,16 @@ Boss::Boss(QWidget *parent)
             qDebug() << "图片加载失败！路径";
         }
     }
+
+    QString str3= ":/ren3/resources/jineng1";
+    for(int i = 1;i <= 2;i++)
+    {
+        Skill2[i - 1] = QPixmap(QString(str3 + "%1" + ".png").arg(i));
+        if (Skill2[i - 1].isNull()) {
+            qDebug() << "图片加载失败！路径";
+        }
+    }
+
 
     QString str= ":/ren3/resources/jingzhi";
     for(int i = 1;i <= 4;i++)
@@ -63,6 +76,15 @@ Boss::Boss(QWidget *parent)
         }
     });
     Skill1Timer->start(500);
+
+    connect(Skill2Timer,&QTimer::timeout,this,[=](){
+        curSkill2Idx++;
+        if(curSkill2Idx > 1)
+        {
+            curSkill2Idx = 0;
+        }
+    });
+    Skill2Timer->start(500);
 
     connect(deButTimer,&QTimer::timeout,this,[=](){
         deButTimer->stop();
@@ -144,8 +166,17 @@ void Boss::releaseSkills()
             isReleaseSkill = true;
             isNormal = false;
             isSkill1 = true;
+            isSkill2 = false;
             qDebug()<<"释放一技能";
             break;
+
+        case 2:
+            emit release_2();
+            isReleaseSkill = true;
+            isNormal = false;
+            isSkill1 = false;
+            isSkill2 = true;
+            qDebug()<<"释放二技能";
         default:
             break;
     }
@@ -155,7 +186,7 @@ void Boss::timerStop()
 {
     NormalActiveTimer->stop();             //默认行为定时器(定时播放boss动画帧)
     Skill1Timer->stop();                   //1技能行为定时器(定时播放动画帧)
-
+    Skill2Timer->stop();                   //2技能行为定时器
     deButTimer->stop();                    //登场计时器
     rateSkillsTimer->stop();               //技能释放频率计时器
 }
@@ -164,6 +195,7 @@ void Boss::timerStart()
 {
     NormalActiveTimer->start(500);
     Skill1Timer->start(500);
+    Skill2Timer->start(500);
     deButTimer->start(5000);
     rateSkillsTimer->start(20000);
 }

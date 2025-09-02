@@ -5,7 +5,7 @@
 * @file         collidable.h
 * @brief        所有可碰撞物体的基类
 *
-* @author       shanzhi
+* @author       shanzhi-ph
 * @date         2025/08/18
 * @history
 ***********************************************************************************/

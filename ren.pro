@@ -17,7 +17,8 @@ SOURCES += \
     healthbar.cpp \
     main.cpp \
     mainwindow.cpp \
-    player.cpp
+    player.cpp \
+    ruledialog.cpp
 
 HEADERS += \
     barrier.h \
@@ -28,10 +29,12 @@ HEADERS += \
     global.h \
     healthbar.h \
     mainwindow.h \
-    player.h
+    player.h \
+    ruledialog.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    ruledialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -43,3 +46,5 @@ RESOURCES += \
 
 DISTFILES += \
     ren3/back.jpg
+
+win32:RC_ICONS = windowIco.ico

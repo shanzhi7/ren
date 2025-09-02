@@ -70,5 +70,6 @@
         <file>ren3/zidantexiao/bullet2.png</file>
         <file>ren3/zidantexiao/bulletHead.png</file>
         <file>ren3/sound/fire.wav</file>
+        <file>ren3/resources/win.png</file>
     </qresource>
 </RCC>

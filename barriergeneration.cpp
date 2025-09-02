@@ -14,11 +14,14 @@ BarrierGeneration::BarrierGeneration(QWidget *parent,Boss* bos,player* player)
     dartsTimer = new QTimer(this);
     moveTimer = new QTimer(this);
     NormalAttackTimer = new QTimer(this);
+    skill2AttackTimer = new QTimer(this);
     skill1Timer = new QTimer(this);
+    skill2Timer = new QTimer(this);
     coinTimer = new QTimer(this);
     fireTimer = new QTimer(this);
     bullteFire = new QLabel(parent);
-    firePixmap = QPixmap(":/ren3/zidantexiao/bullet1.png").scaled(100, 100, Qt::KeepAspectRatio);
+
+    firePixmap = QPixmap(":/ren3/zidantexiao/bullet1.png").scaled(100, 100, Qt::KeepAspectRatio);//开火特效
     bullteFire->setPixmap(firePixmap);
     bullteFire->resize(100,100);
 
@@ -31,7 +34,9 @@ BarrierGeneration::BarrierGeneration(QWidget *parent,Boss* bos,player* player)
         updateBulletPos();
         updateBarrierPos();
     });
+
     connect(NormalAttackTimer,&QTimer::timeout,this,&BarrierGeneration::NormalAttackGenerate);
+    connect(skill2AttackTimer,&QTimer::timeout,this,&BarrierGeneration::skill2AttackkGenerate);
     connect(coinTimer,&QTimer::timeout,this,&BarrierGeneration::CoinGenerate);
     connect(m_player,&player::fired,this,&BarrierGeneration::bulletGenerate);
     connect(dartsTimer,&QTimer::timeout,this,&BarrierGeneration::dartsGenerate);
@@ -41,12 +46,29 @@ BarrierGeneration::BarrierGeneration(QWidget *parent,Boss* bos,player* player)
         NormalAttackTimer->start(1500);//间隔1.5s生成一个普通攻击
         skill1Timer->start(20000);     //技能1总时长
     });
+
+    connect(m_boss,&Boss::release_2,this,[=](){
+        qDebug()<<"release_2";
+        skill2AttackTimer->start(2000);//间隔1.5s生成一个普通攻击
+        skill2Timer->start(20000);     //技能2总时长
+    });
+
     connect(skill1Timer,&QTimer::timeout,this,[=](){            //普通攻击技能时长结束
         skill1Timer->stop();
         NormalAttackTimer->stop();
         m_boss->isReleaseSkill = false;
         m_boss->isNormal = true;
         m_boss->isSkill1 = false;
+        m_boss->isSkill2 = false;
+    });
+
+    connect(skill2Timer,&QTimer::timeout,this,[=](){           //二技能时长结束
+        skill2Timer->stop();
+        skill2AttackTimer->stop();
+        m_boss->isReleaseSkill = false;
+        m_boss->isNormal = true;
+        m_boss->isSkill1 = false;
+        m_boss->isSkill2 = false;
     });
 }
 
@@ -85,9 +107,14 @@ void BarrierGeneration::CoinGenerate()
 
 void BarrierGeneration::NormalAttackGenerate()
 {
-
     int y = rand() % (600 - 150) + 150;
     list.append(new NormalAttack(1400,y,100,70));
+}
+
+void BarrierGeneration::skill2AttackkGenerate()
+{
+    int y = rand() % (600 - 150) + 150;
+    list.append(new Flash(1400,y));
 }
 
 void BarrierGeneration::dartsGenerate()
@@ -114,7 +141,7 @@ void BarrierGeneration::setParent(MainWindow* parent)
     m_parent = parent;
 }
 
-void BarrierGeneration::deleteList()
+void BarrierGeneration::deleteList() //清除list
 {
     for(int i = 0;i < list.size();)
     {

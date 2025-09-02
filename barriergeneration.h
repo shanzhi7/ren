@@ -30,6 +30,7 @@ public:
     void swordGenerate();                       //生成飞剑
     void CoinGenerate();                        //生成忍币
     void NormalAttackGenerate();                //生成boss普通攻击
+    void skill2AttackkGenerate();               //生成boss二技能攻击
     void dartsGenerate();                       //生成飞镖
     void bulletGenerate();                      //生成子弹
     void setParent(MainWindow* parent);         //设置父对象
@@ -37,6 +38,7 @@ public:
 
     void timerStop();                           //定时器停止
     void timerStart();                          //定时器启动
+
     void bullteFireHide();                      //隐藏特效
     QList<barrier* >& getList();                //获取障碍物列表
     QList<Bullet* > &getBulletList();           //获取子弹列表
@@ -50,7 +52,10 @@ private:
     QTimer* swordTimer;                         //生成飞剑定时器
     QTimer* coinTimer;                          //生成忍币定时器
     QTimer* skill1Timer;                        //一技能(普通攻击释放总时长)
+    QTimer* skill2Timer;                        //二技能释放总时长
+
     QTimer* NormalAttackTimer;                  //生成boos普通攻击计时器
+    QTimer* skill2AttackTimer;                  //生成二技能计时器
     QTimer* dartsTimer;                         //生成飞镖定时器
 
     QTimer* moveTimer;                          //控制障碍物移动的定时器

@@ -12,6 +12,7 @@
 #include "collidable.h"
 #include "global.h"
 #include <QWidget>
+#include <QTimer>
 
 class barrier : public QWidget,public Collidable
 {
@@ -42,10 +43,10 @@ public:
     int type;
     int speed;
     QRect getRect() override;                                    //获取矩形
-    QPixmap getPixmap();
+    virtual QPixmap getPixmap();
     void setRect(int x,int y,int width,int height);
     bool isActive();                                    //是否存活
-    virtual QRect getDeadRect() = 0;                    //获取碰撞矩形
+    //virtual QRect getDeadRect() = 0;                    //获取碰撞矩形
     virtual void move() = 0;
 
 private:
@@ -117,5 +118,22 @@ public:
     void move() override;                              //移动
 };
 
+class Flash : public barrier
+{
+private:
+
+public:
+    Flash(int x,int y,int width = 300,int height = 160);
+
+    QRect getDeadRect() override;                       //获取碰撞体型
+    void move() override;                               //移动
+    QPixmap getPixmap() override;
+
+    QPixmap flashPixmap[4];                             //图片动画帧
+    int curPixmapIdx;                                   //当前图片下表
+
+
+    QTimer pixmapTimer;                                 //定时更新图片帧
+};
 
 #endif // BARRIER_H
