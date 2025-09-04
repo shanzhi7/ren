@@ -1,2 +1,3 @@
+
 # ren
-qt跑酷打boss游戏
+qt creator开发的横版跑酷击杀BOSS的小游戏
